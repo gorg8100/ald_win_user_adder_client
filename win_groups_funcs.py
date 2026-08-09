@@ -100,7 +100,7 @@ def add_ald_object(g_type: Literal["user", "group"], name: str, sec_id: str = No
     fullname = get_fullname(g_type, name)
     # print(fullname, check_win_group(fullname))
     if not check_win_group(fullname):
-        do_command(["net", "localgroup", fullname, "/add", "/comment", "Domain user"])
+        do_command(["net", "localgroup", fullname, "/add", f'/comment: "Domain {g_type}"'])
         if g_type == "user":
             add_user_win_group(fullname, sec_id, False)
     return

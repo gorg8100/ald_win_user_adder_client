@@ -43,15 +43,18 @@ def main():
                manifest.groups))
     # print(users)
     # print(groups)
-    set_up_ald_users(users)
-    # print("================")
-    group_members = get_group_members(groups, users)
-    # print(group_members)
-    set_up_ald_groups(groups, group_members)
-    local_group_members = get_local_group_members(manifest.commands, settings.local_data, users, groups, group_members)
-    # print(local_group_members)
-    set_up_local_groups_members(local_group_members, users)
-    input()
+    try:
+        set_up_ald_users(users)
+        # print("================")
+        group_members = get_group_members(groups, users)
+        # print(group_members)
+        set_up_ald_groups(groups, group_members)
+        local_group_members = get_local_group_members(manifest.commands, settings.local_data, users, groups, group_members)
+        # print(local_group_members)
+        set_up_local_groups_members(local_group_members, users)
+    except Exception as err:
+        print(type(err).__name__, err)
+        input()
     return
 
 
