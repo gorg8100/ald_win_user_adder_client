@@ -4,11 +4,8 @@ import re
 import unittest
 
 
-def do_command(performance: bool, command: list[str], inp: str = None, check_code: bool = True, ret_code: bool = False) \
+def do_command(command: list[str], inp: str = None, check_code: bool = True, ret_code: bool = False) \
         -> Union[str, tuple[int, str]]:
-    if not performance:
-        print(command)
-        return
     result = subprocess.run(command, text=True, input=inp, capture_output=True, encoding="cp866")
     if check_code and result.returncode != 0:
         raise RuntimeError(f"Command {" ".join(command)} failed, with exit code {result.returncode} and msg:"
@@ -38,14 +35,14 @@ def get_fullname(g_type: Literal["user", "group"], name: str) -> str:
 
 
 def check_win_group(fullname: str) -> bool:
-    code, _ = do_command(True, ["net", "localgroup", fullname], check_code=False, ret_code=True)
+    code, _ = do_command(["net", "localgroup", fullname], check_code=False, ret_code=True)
     if code != 0:
         return False
     return True
 
 
 def get_win_groups() -> Iterator[str]:
-    win_groups = do_command(True, ["net", "localgroup"]).split("\n")
+    win_groups = do_command(["net", "localgroup"]).split("\n")
     win_groups = filter(lambda x: bool(x) and x[0] == "*", win_groups)
     win_groups = map(lambda x: x[1:], win_groups)
     return win_groups
@@ -59,7 +56,7 @@ def difference_win_groups(g_type: Literal["user", "group"], names: set[str]) -> 
 
 def del_win_groups(names: set[str]):
     for name in names:
-        do_command(False, ["net", "localgroup", name, "/delete"])
+        do_command(["net", "localgroup", name, "/delete"])
 
 
 def del_extraneous_ald_objects(g_type: Literal["user", "group"], objects: list[dict[str, Any]]):
@@ -76,12 +73,12 @@ def check_sid(sid: str):
 
 def get_sid_win_group(fullname: str) -> str:
     escaped_fullname = escape_powershell_argument_script(fullname)
-    gr_sid = do_command(True, ["powershell.exe", "-Command", f'(Get-LocalGroup -Name {escaped_fullname}).SID.Value'])
+    gr_sid = do_command(["powershell.exe", "-Command", f'(Get-LocalGroup -Name {escaped_fullname}).SID.Value'])
     return gr_sid.split("\n")[0]
 
 
 def get_win_group_members(gr_sid: str) -> set[str]:
-    data = do_command(True, ["powershell.exe", "-Command", f'(Get-LocalGroupMember -SID "{gr_sid}").SID.Value'])
+    data = do_command(["powershell.exe", "-Command", f'(Get-LocalGroupMember -SID "{gr_sid}").SID.Value'])
     members = set(filter(lambda x: bool(x), data.split("\n")))
     return members
 
@@ -94,8 +91,8 @@ def add_user_win_group(fullname: str, sec_id: str, existence_check: bool, gr_sid
         members = get_win_group_members(gr_sid)
         if sec_id in members:
             return
-    do_command(False, ["powershell.exe", "-Command",
-                       f'Add-LocalGroupMember -SID "{gr_sid}" -Member "{sec_id}"'])
+    do_command(["powershell.exe", "-Command",
+                f'Add-LocalGroupMember -SID "{gr_sid}" -Member "{sec_id}"'])
     return
 
 
@@ -103,7 +100,7 @@ def add_ald_object(g_type: Literal["user", "group"], name: str, sec_id: str = No
     fullname = get_fullname(g_type, name)
     # print(fullname, check_win_group(fullname))
     if not check_win_group(fullname):
-        do_command(False, ["net", "localgroup", fullname, "/add", "/comment", "Domain user"])
+        do_command(["net", "localgroup", fullname, "/add", "/comment", "Domain user"])
         if g_type == "user":
             add_user_win_group(fullname, sec_id, False)
     return
@@ -140,7 +137,7 @@ def set_up_ald_groups(groups: list[dict[str, Any]], group_members: dict[str, set
 
 def del_user_win_group(sid: str, gr_sid: str):
     check_sid(sid)
-    do_command(False, ["powershell.exe", "-Command", f'Remove-LocalGroupMember -SID "{gr_sid}" -Member "{sid}"'])
+    do_command(["powershell.exe", "-Command", f'Remove-LocalGroupMember -SID "{gr_sid}" -Member "{sid}"'])
     return
 
 
@@ -153,7 +150,7 @@ def del_users_win_group(sids: set[str], gr_sid: str):
 def set_up_ald_group_members(group_name: str, members: set[str]):
     group_fullname = get_fullname("group", group_name)
     gr_sid = get_sid_win_group(group_fullname)
-    print(">>", gr_sid, group_fullname)
+    # print(">>", gr_sid, group_fullname)
     current_members = get_win_group_members(gr_sid)
     extra_members = current_members - members
     del_users_win_group(extra_members, gr_sid)
