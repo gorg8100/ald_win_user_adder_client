@@ -6,6 +6,7 @@ import unittest
 
 def do_command(command: list[str], inp: str = None, check_code: bool = True, ret_code: bool = False) \
         -> Union[str, tuple[int, str]]:
+    print(command)
     result = subprocess.run(command, text=True, input=inp, capture_output=True, encoding="cp866")
     if check_code and result.returncode != 0:
         raise RuntimeError(f"Command {" ".join(command)} failed, with exit code {result.returncode} and msg:"
@@ -78,8 +79,12 @@ def get_sid_win_group(fullname: str) -> str:
 
 
 def get_win_group_members(gr_sid: str) -> set[str]:
+    print("{")
     data = do_command(["powershell.exe", "-Command", f'(Get-LocalGroupMember -SID "{gr_sid}").SID.Value'])
+    print(data)
     members = set(filter(lambda x: bool(x), data.split("\n")))
+    print(members)
+    print("}")
     return members
 
 

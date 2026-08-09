@@ -57,6 +57,8 @@ def main():
         with open(settings.log_file_path, "a", encoding="utf-8") as f:
             print("========================", file=f)
             print(f"[{datetime.now().replace(microsecond=0)}]{type(err).__name__}: {err}.", file=f)
+        print(f"{type(err).__name__}: {err}.", file=f)
+        input("Введите символ")
     return
 
 
