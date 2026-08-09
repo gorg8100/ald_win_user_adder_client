@@ -5,7 +5,7 @@ from zipfile import ZipFile
 
 def make_zip_exe(path: str, name: str):
     with ZipFile(f"{path}/{name}.zip", 'w') as zip_file:
-        zip_file.write(f"{path}/{name}.exe")
+        zip_file.write(f"{path}/{name}.exe", arcname=f"{name}.exe")
     return
 
 
