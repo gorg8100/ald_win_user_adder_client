@@ -150,8 +150,9 @@ def del_users_win_group(sids: set[str], gr_sid: str):
 def set_up_ald_group_members(group_name: str, members: set[str]):
     group_fullname = get_fullname("group", group_name)
     gr_sid = get_sid_win_group(group_fullname)
-    # print(">>", gr_sid, group_fullname)
+    print(">>", gr_sid, group_fullname)
     current_members = get_win_group_members(gr_sid)
+    print(current_members)
     extra_members = current_members - members
     del_users_win_group(extra_members, gr_sid)
     for member in members:
