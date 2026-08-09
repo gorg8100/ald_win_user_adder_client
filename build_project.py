@@ -1,5 +1,12 @@
 import subprocess
 import os
+from zipfile import ZipFile
+
+
+def make_zip_exe(path: str, name: str):
+    with ZipFile(f"{path}/{name}.zip", 'w') as zip_file:
+        zip_file.write(f"{path}/{name}.exe")
+    return
 
 
 def checking_folders(*args: str):
@@ -20,6 +27,7 @@ def assembly(distpath: str, workpath: str, specpath: str, name: str):
                     "--onefile",
                     "--strip",
                     "main.py"])
+    make_zip_exe(distpath, name)
     return
 
 
