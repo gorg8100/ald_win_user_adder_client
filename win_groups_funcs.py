@@ -162,7 +162,7 @@ def set_up_ald_group_members(group_name: str, members: set[str]):
     del_users_win_group(extra_members, gr_sid)
     for member in members:
         if member not in current_members:
-            add_user_win_group(group_fullname, member, False, gr_sid)
+            add_user_win_group(group_fullname, member, True, gr_sid)
     return
 
 
