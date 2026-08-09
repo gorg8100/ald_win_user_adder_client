@@ -51,6 +51,7 @@ def main():
     local_group_members = get_local_group_members(manifest.commands, settings.local_data, users, groups, group_members)
     # print(local_group_members)
     set_up_local_groups_members(local_group_members, users)
+    input()
     return
 
 
