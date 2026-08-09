@@ -1,4 +1,5 @@
 from typing import Any
+from datetime import datetime
 from configuration_getter import Configuration
 from manifest_getter import JsonManifest, Command
 from preprocess_condition import pre_process_condition
@@ -32,29 +33,30 @@ def get_local_group_members(commands: list[Command], local_data: dict, users: li
 
 def main():
     settings = Configuration("settings.json")
-    manifest = JsonManifest(settings.sources)
-    manifest.obj_filter = pre_process_condition(manifest.obj_filter, settings.local_data)
-    # print(manifest.obj_filter)
-    users = list(
-        filter(lambda usr: process_condition("user", usr, manifest.obj_filter, settings.local_data),
-               manifest.users))
-    groups = list(
-        filter(lambda group: process_condition("group", group, manifest.obj_filter, settings.local_data),
-               manifest.groups))
-    # print(users)
-    # print(groups)
     try:
+        manifest = JsonManifest(settings.sources)
+        manifest.obj_filter = pre_process_condition(manifest.obj_filter, settings.local_data)
+        users = list(
+            filter(lambda usr: process_condition("user", usr, manifest.obj_filter, settings.local_data),
+                   manifest.users))
+        groups = list(
+            filter(lambda group: process_condition("group", group, manifest.obj_filter, settings.local_data),
+                   manifest.groups))
+        print("main set_up_ald_users")
         set_up_ald_users(users)
-        # print("================")
+        print("main get_group_members")
         group_members = get_group_members(groups, users)
-        # print(group_members)
+        print("main set_up_ald_groups")
         set_up_ald_groups(groups, group_members)
-        local_group_members = get_local_group_members(manifest.commands, settings.local_data, users, groups, group_members)
-        # print(local_group_members)
+        print("main get_local_group_members")
+        local_group_members = get_local_group_members(manifest.commands, settings.local_data, users, groups,
+                                                      group_members)
+        print("main set_up_local_groups_members")
         set_up_local_groups_members(local_group_members, users)
     except Exception as err:
-        print(type(err).__name__, err)
-        input()
+        with open(settings.log_file_path, "a", encoding="utf-8") as f:
+            print("========================", file=f)
+            print(f"[{datetime.now().replace(microsecond=0)}]{type(err).__name__}: {err}.", file=f)
     return
 
 
