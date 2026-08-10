@@ -27,11 +27,14 @@ class JsonManifest:
     def __init__(self, urls: list[str]):
         self.get_manifest(urls)
 
-    def get_manifest(self, urls: list[str]):
-        random.shuffle(urls)
+    def get_manifest(self, sources: list[str]):
+        random.shuffle(sources)
         json_data = None
-        for url in urls:
-            json_data = try_get_json_from_url(url)
+        for source in sources:
+            if source.startswith("http"):
+                json_data = try_get_json_from_url(source)
+            else:
+                json_data = try_get_json_from_file(source)
         if isinstance(json_data, Exception):
             raise ConnectionError(f"Unable to retrieve JSON manifest, error: {json_data}")
         self.obj_filter = json_data["obj_filter"]
@@ -47,6 +50,16 @@ def try_get_json_from_url(url: str) -> dict | Exception:
         req = urllib.request.Request(url)
         response = urllib.request.urlopen(req)
         text = response.read().decode('utf-8')
+        json_data = json.loads(text)
+        return json_data
+    except Exception as err:
+        return err
+
+
+def try_get_json_from_file(path: str) -> dict | Exception:
+    try:
+        with open('file.txt', 'r', encoding='utf-8') as f:
+            text = f.read()
         json_data = json.loads(text)
         return json_data
     except Exception as err:

@@ -7,6 +7,10 @@ from condition_handler import process_condition
 from win_groups_funcs import set_up_ald_users, set_up_ald_groups, set_up_local_groups_members, get_group_members
 
 
+def pause():
+    print(input("<<<"))
+
+
 def get_local_group_members(commands: list[Command], local_data: dict, users: list[dict[str, Any]],
                             groups: list[dict[str, Any]], group_members: dict[str, set[str]]) -> dict[str, set[str]]:
     local_group_members: dict[str, set[str]] = {}
@@ -53,13 +57,13 @@ def main():
                                                       group_members)
         print("main set_up_local_groups_members")
         set_up_local_groups_members(local_group_members, users)
+        pause()
     except Exception as err:
         with open(settings.log_file_path, "a", encoding="utf-8") as f:
             print("========================", file=f)
             print(f"[{datetime.now().replace(microsecond=0)}]{type(err).__name__}: {err}.", file=f)
         print(f"{type(err).__name__}: {err}.", file=f)
-        a = input("Введите символ")
-        print(a)
+        pause()
     return
 
 
