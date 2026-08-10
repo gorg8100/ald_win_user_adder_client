@@ -1,14 +1,11 @@
 from typing import Any
 from datetime import datetime
+import os
 from configuration_getter import Configuration
 from manifest_getter import JsonManifest, Command
 from preprocess_condition import pre_process_condition
 from condition_handler import process_condition
 from win_groups_funcs import set_up_ald_users, set_up_ald_groups, set_up_local_groups_members, get_group_members
-
-
-def pause():
-    print(input("<<<"))
 
 
 def get_local_group_members(commands: list[Command], local_data: dict, users: list[dict[str, Any]],
@@ -57,13 +54,14 @@ def main():
                                                       group_members)
         print("main set_up_local_groups_members")
         set_up_local_groups_members(local_group_members, users)
-        pause()
+        os.system("pause")
     except Exception as err:
-        with open(settings.log_file_path, "a", encoding="utf-8") as f:
+        os.system("pause")
+        with open(settings.log_file_path, "a") as f:
             print("========================", file=f)
             print(f"[{datetime.now().replace(microsecond=0)}]{type(err).__name__}: {err}.", file=f)
         print(f"{type(err).__name__}: {err}.", file=f)
-        pause()
+        os.system("pause")
     return
 
 

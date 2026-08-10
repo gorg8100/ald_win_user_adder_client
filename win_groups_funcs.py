@@ -7,7 +7,7 @@ import unittest
 def do_command(command: list[str], inp: str = None, check_code: bool = True, ret_code: bool = False) \
         -> Union[str, tuple[int, str]]:
     print(command)
-    result = subprocess.run(command, text=True, input=inp, capture_output=True)
+    result = subprocess.run(command, text=True, input=inp, capture_output=True, shell=False)
     if check_code and result.returncode != 0:
         raise RuntimeError(f"Command {" ".join(command)} failed, with exit code {result.returncode} and msg:"
                            f"\n{result.stderr}")
