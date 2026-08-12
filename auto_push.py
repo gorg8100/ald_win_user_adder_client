@@ -1,15 +1,26 @@
 from build_project import assembly
 import subprocess
 import shutil
+import os
 import urllib.request
 import json
+
+
+def obtain_consent(msg: str) -> bool:
+    while True:
+        confirmation = input(f"{msg} (y/n):")
+        while confirmation not in ["y", "n"]:
+            confirmation = input("Значение ответа должно быть y/n:")
+        if confirmation == "y":
+            return True
+        return False
 
 
 def input_loop(msg: str) -> str:
     while True:
         data = input(msg)
         print(f"Вы ввели:{data}")
-        confirmation = input("Вы уверены?(y/n):")
+        confirmation = input("Вы уверены? (y/n):")
         while confirmation not in ["y", "n"]:
             confirmation = input("Значение ответа должно быть y/n:")
         if confirmation == "y":
@@ -36,7 +47,9 @@ def get_latest_data(repos: str) -> tuple[str, str]:
 
 
 def make_release(distpath: str, workpath: str, specpath: str, name: str, repos: str):
-    shutil.rmtree(distpath[:distpath.rfind("/")])
+    building_folder = distpath[:distpath.rfind("/")]
+    if os.path.exists(building_folder):
+        shutil.rmtree(building_folder)
     print("*****[Начало сборки]*****")
     assembly(distpath, workpath, specpath, name)
     print("*****[Сборка окончена]*****")
@@ -52,12 +65,14 @@ def make_release(distpath: str, workpath: str, specpath: str, name: str, repos: 
 
 
 def main():
-    repository_push()
-    make_release("./compilation_data/bin",
-                 "./compilation_data/tmp",
-                 "./compilation_data/spec",
-                 "ald_user_adder",
-                 "gorg8100/ald_win_user_adder_client")
+    if obtain_consent("Отправить коммит?"):
+        repository_push()
+    if obtain_consent("Отправить релиз?"):
+        make_release("./compilation_data/bin",
+                     "./compilation_data/tmp",
+                     "./compilation_data/spec",
+                     "ald_user_adder",
+                     "gorg8100/ald_win_user_adder_client")
     return
 
 
