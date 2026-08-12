@@ -85,10 +85,12 @@ def get_sid_win_group(fullname: str) -> str:
 def get_win_group_members(gr_sid: str) -> set[str]:
     print("{")
     # data = do_command(["powershell.exe", "-Command", f'(Get-LocalGroupMember -SID "{gr_sid}").SID.Value'])
-    pwsh_script = f"""$computer = $env:COMPUTERNAME
-(Get-WmiObject -Class Win32_Group -Filter "LocalAccount = TRUE and SID = '{gr_sid}'").GetRelated(
-    "Win32_Account", "Win32_GroupUser", "", "", "PartComponent", "GroupComponent", $false, $null
-) | Select-Object -ExpandProperty SID"""
+    pwsh_script = (f'$groupSID="{gr_sid}";'
+                   '$group=Get-WmiObject -Class Win32_Group|Where-Object{$_.SID -eq $groupSID};'
+                   'if($group){$groupName=$group.Name;([ADSI]"WinNT://./$groupName,group").Members()'
+                   '|ForEach-Object{$sidBytes=$_.GetType().InvokeMember("objectSid","GetProperty",$null,$_,$null);'
+                   'if($sidBytes){[System.Security.Principal.SecurityIdentifier]::new($sidBytes,0).Value}}}'
+                   'else{throw "Группа с SID $groupSID не найдена."}')
     data = do_command(["powershell.exe", "-Command", pwsh_script])
     print(data)
     members = set(filter(lambda x: bool(x), data.split("\n")))
