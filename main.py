@@ -47,20 +47,21 @@ def main():
         set_up_ald_users(users)
         print("main get_group_members")
         group_members = get_group_members(groups, users)
+        print(group_members)
         print("main set_up_ald_groups")
         set_up_ald_groups(groups, group_members)
         print("main get_local_group_members")
         local_group_members = get_local_group_members(manifest.commands, settings.local_data, users, groups,
                                                       group_members)
+        print(local_group_members)
         print("main set_up_local_groups_members")
         set_up_local_groups_members(local_group_members, users)
         os.system("pause")
     except Exception as err:
-        os.system("pause")
         with open(settings.log_file_path, "a") as f:
             print("========================", file=f)
             print(f"[{datetime.now().replace(microsecond=0)}]{type(err).__name__}: {err}.", file=f)
-        print(f"{type(err).__name__}: {err}.", file=f)
+        print(f"{type(err).__name__}: {err}.")
         os.system("pause")
     return
 

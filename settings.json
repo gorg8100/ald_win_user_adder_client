@@ -1,7 +1,7 @@
 {
   "log_file_path": "log.txt",
-  "sources": ["http://127.0.0.1:400"],
+  "sources": ["http://127.0.0.1:400/data.json"],
   "local_data": {
-    "": ""
+    "test": "a"
   }
 }

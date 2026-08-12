@@ -90,10 +90,10 @@ def regexp_condition(obj_type: Literal["user", "group"], obj: dict, condition: d
     return bool(re.fullmatch(condition["value"], obj[condition["field"]]))
 
 
-def process_condition(obj_type: Literal["user", "group"], obj: dict | bool, condition: dict, local_data: dict) -> bool:
-    if isinstance(obj, dict):
+def process_condition(obj_type: Literal["user", "group"], obj: dict, condition: dict | bool, local_data: dict) -> bool:
+    if isinstance(condition, dict):
         resolver_dict = {"or": or_condition, "and": and_condition, "not": not_condition, "is_user": is_user_condition,
                          "is_group": is_group_condition, "fields_op": fields_op_condition, "regexp": regexp_condition}
         condition_type: str = condition["cond_type"]
         return resolver_dict[condition_type](obj_type, obj, condition, local_data)
-    return obj
+    return condition
