@@ -74,13 +74,19 @@ def check_sid(sid: str):
 
 def get_sid_win_group(fullname: str) -> str:
     escaped_fullname = escape_powershell_argument_script(fullname)
-    gr_sid = do_command(["powershell.exe", "-Command", f'(Get-LocalGroup -Name {escaped_fullname}).SID.Value'])
+    pwsh_c = f'powershell.exe -Command (Get-LocalGroup -Name {escaped_fullname}).SID.Value'
+    gr_sid = do_command(["runas", "/trustlevel:0x20000", pwsh_c])
     return gr_sid.split("\n")[0]
 
 
 def get_win_group_members(gr_sid: str) -> set[str]:
     print("{")
-    data = do_command(["powershell.exe", "-Command", f'(Get-LocalGroupMember -SID "{gr_sid}").SID.Value'])
+    # data = do_command(["powershell.exe", "-Command", f'(Get-LocalGroupMember -SID "{gr_sid}").SID.Value'])
+    pwsh_script = f"""$computer = $env:COMPUTERNAME
+(Get-WmiObject -Class Win32_Group -Filter "LocalAccount = TRUE and SID = '{gr_sid}'").GetRelated(
+    "Win32_Account", "Win32_GroupUser", "", "", "PartComponent", "GroupComponent", $false, $null
+) | Select-Object -ExpandProperty SID"""
+    data = do_command(["powershell.exe", "-Command", pwsh_script])
     print(data)
     members = set(filter(lambda x: bool(x), data.split("\n")))
     print(members)
@@ -194,6 +200,9 @@ def set_up_local_groups_members(group_members: dict[str, set[str]], users: list[
 
 def set_up_local_group_members(win_group: str, relevant_members: set[str], ald_sid_prefixes: set[str]):
     gr_sid = get_sid_win_group(win_group)
+    if not gr_sid:
+        print("set_up_local_group_members gr_sid null")
+        return
     current_members = get_win_group_members(gr_sid)
     for member in current_members:
         if check_sid_prefix(member, ald_sid_prefixes):
