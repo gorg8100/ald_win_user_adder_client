@@ -58,7 +58,7 @@ def make_release(distpath: str, workpath: str, specpath: str, name: str, repos: 
     tag = input_loop("Введите тег релиза:")
     print(f"Последний загаловок: {latest_title}")
     title = input_loop("Введите заголовок релиза:")
-    subprocess.run(["git", "release", "create", tag, f"{distpath}/{name}.zip",
+    subprocess.run(["gh", "release", "create", tag, f"{distpath}/{name}.zip",
                     "--generate-notes",
                     "--title", title])
     return
