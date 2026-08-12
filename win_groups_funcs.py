@@ -1,6 +1,8 @@
 from typing import Literal, Union, Iterator, Any
 import subprocess
 import re
+import tempfile
+import os
 import unittest
 
 
@@ -74,8 +76,9 @@ def check_sid(sid: str):
 
 def get_sid_win_group(fullname: str) -> str:
     escaped_fullname = escape_powershell_argument_script(fullname)
-    pwsh_c = f'powershell.exe -Command (Get-LocalGroup -Name {escaped_fullname}).SID.Value'
-    gr_sid = do_command(["runas", "/trustlevel:0x20000", pwsh_c])
+    # pwsh_c = f'powershell.exe -Command (Get-LocalGroup -Name {escaped_fullname}).SID.Value'
+    # gr_sid = do_command(["runas", "/trustlevel:0x20000", pwsh_c])
+    gr_sid = do_command(["powershell.exe", "-Command", f"(Get-LocalGroup -Name {escaped_fullname}).SID.Value"])
     return gr_sid.split("\n")[0]
 
 
