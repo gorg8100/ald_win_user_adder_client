@@ -192,6 +192,12 @@ def check_sid_prefix(sid: str, sid_prefixes: set[str]) -> bool:
     return False
 
 
+def warning_msg(func_name: str, msg: str):
+    print("!!!!!!!!!!!!!!!!")
+    print(f"[{func_name}]: {msg}")
+    print("^^^^^^^^^^^^^^^^")
+
+
 def set_up_local_groups_members(group_members: dict[str, set[str]], users: list[dict[str, Any]]):
     win_groups = get_win_groups()
     ald_sid_prefixes = get_all_sid_prefix(users)
@@ -200,17 +206,21 @@ def set_up_local_groups_members(group_members: dict[str, set[str]], users: list[
             continue
         gr_sid = get_sid_win_group(win_group)
         if not gr_sid:
-            print(f"local group {win_group} skipped")
+            warning_msg("set_up_local_groups_members", f"local group {win_group} skipped: null sid")
             continue
         if win_group in group_members:
             set_up_local_group_members(win_group, group_members[win_group], ald_sid_prefixes, gr_sid)
         else:
-            del_ald_users_local_group(ald_sid_prefixes, gr_sid)
+            del_ald_users_local_group(win_group, ald_sid_prefixes, gr_sid)
     return
 
 
 def set_up_local_group_members(win_group: str, relevant_members: set[str], ald_sid_prefixes: set[str], gr_sid: str):
-    current_members = get_win_group_members(gr_sid)
+    try:
+        current_members = get_win_group_members(gr_sid)
+    except Exception as err:
+        warning_msg("set_up_local_group_members", f"local group {win_group} skipped, error: {err}")
+        return
     for member in current_members:
         if check_sid_prefix(member, ald_sid_prefixes):
             if member not in relevant_members:
@@ -221,8 +231,12 @@ def set_up_local_group_members(win_group: str, relevant_members: set[str], ald_s
     return
 
 
-def del_ald_users_local_group(ald_sid_prefixes: set[str], gr_sid: str):
-    all_members = get_win_group_members(gr_sid)
+def del_ald_users_local_group(win_group: str, ald_sid_prefixes: set[str], gr_sid: str):
+    try:
+        all_members = get_win_group_members(gr_sid)
+    except Exception as err:
+        warning_msg("del_ald_users_local_group", f"local group {win_group} skipped, error: {err}")
+        return
     for member in all_members:
         if check_sid_prefix(member, ald_sid_prefixes):
             del_user_win_group(member, gr_sid)
