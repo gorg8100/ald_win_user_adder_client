@@ -196,6 +196,8 @@ def set_up_local_groups_members(group_members: dict[str, set[str]], users: list[
     win_groups = get_win_groups()
     ald_sid_prefixes = get_all_sid_prefix(users)
     for win_group in win_groups:
+        if win_group.startswith(get_name_prefix("group")) or win_group.startswith(get_name_prefix("user")):
+            continue
         if win_group in group_members:
             set_up_local_group_members(win_group, group_members[win_group], ald_sid_prefixes)
         else:
@@ -205,6 +207,7 @@ def set_up_local_groups_members(group_members: dict[str, set[str]], users: list[
 
 def set_up_local_group_members(win_group: str, relevant_members: set[str], ald_sid_prefixes: set[str]):
     gr_sid = get_sid_win_group(win_group)
+    print(f">s> {gr_sid}; {bool(gr_sid)}")
     if not gr_sid:
         print("set_up_local_group_members gr_sid null")
         return
@@ -221,6 +224,7 @@ def set_up_local_group_members(win_group: str, relevant_members: set[str], ald_s
 
 def del_ald_users_local_group(win_group: str, ald_sid_prefixes: set[str]):
     gr_sid = get_sid_win_group(win_group)
+    print(f">d> {gr_sid}; {bool(gr_sid)}")
     all_members = get_win_group_members(gr_sid)
     for member in all_members:
         if check_sid_prefix(member, ald_sid_prefixes):
