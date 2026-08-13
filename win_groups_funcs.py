@@ -204,7 +204,11 @@ def set_up_local_groups_members(group_members: dict[str, set[str]], users: list[
     for win_group in win_groups:
         if win_group.startswith(get_name_prefix("group")) or win_group.startswith(get_name_prefix("user")):
             continue
-        gr_sid = get_sid_win_group(win_group)
+        try:
+            gr_sid = get_sid_win_group(win_group)
+        except Exception as err:
+            warning_msg("set_up_local_groups_members", f"local group {win_group} skipped: {err}")
+            continue
         if not gr_sid:
             warning_msg("set_up_local_groups_members", f"local group {win_group} skipped: null sid")
             continue

@@ -43,6 +43,12 @@ def main():
         groups = list(
             filter(lambda group: process_condition("group", group, manifest.obj_filter, settings.local_data),
                    manifest.groups))
+
+        print("users")
+        print(users)
+        print("groups")
+        print(groups)
+
         print("main set_up_ald_users")
         set_up_ald_users(users)
         print("main get_group_members")
