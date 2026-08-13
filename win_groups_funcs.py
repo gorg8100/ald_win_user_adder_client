@@ -198,19 +198,18 @@ def set_up_local_groups_members(group_members: dict[str, set[str]], users: list[
     for win_group in win_groups:
         if win_group.startswith(get_name_prefix("group")) or win_group.startswith(get_name_prefix("user")):
             continue
+        gr_sid = get_sid_win_group(win_group)
+        if not gr_sid:
+            print(f"local group {win_group} skipped")
+            continue
         if win_group in group_members:
-            set_up_local_group_members(win_group, group_members[win_group], ald_sid_prefixes)
+            set_up_local_group_members(win_group, group_members[win_group], ald_sid_prefixes, gr_sid)
         else:
-            del_ald_users_local_group(win_group, ald_sid_prefixes)
+            del_ald_users_local_group(ald_sid_prefixes, gr_sid)
     return
 
 
-def set_up_local_group_members(win_group: str, relevant_members: set[str], ald_sid_prefixes: set[str]):
-    gr_sid = get_sid_win_group(win_group)
-    print(f">s> {gr_sid}; {bool(gr_sid)}")
-    if not gr_sid:
-        print("set_up_local_group_members gr_sid null")
-        return
+def set_up_local_group_members(win_group: str, relevant_members: set[str], ald_sid_prefixes: set[str], gr_sid: str):
     current_members = get_win_group_members(gr_sid)
     for member in current_members:
         if check_sid_prefix(member, ald_sid_prefixes):
@@ -222,9 +221,7 @@ def set_up_local_group_members(win_group: str, relevant_members: set[str], ald_s
     return
 
 
-def del_ald_users_local_group(win_group: str, ald_sid_prefixes: set[str]):
-    gr_sid = get_sid_win_group(win_group)
-    print(f">d> {gr_sid}; {bool(gr_sid)}")
+def del_ald_users_local_group(ald_sid_prefixes: set[str], gr_sid: str):
     all_members = get_win_group_members(gr_sid)
     for member in all_members:
         if check_sid_prefix(member, ald_sid_prefixes):
