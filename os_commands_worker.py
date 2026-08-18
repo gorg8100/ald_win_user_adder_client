@@ -7,8 +7,15 @@ import os
 
 def do_command(command: list[str], inp: str = None, check_code: bool = True, ret_code: bool = False) \
         -> Union[str, tuple[int, str]]:
+    print()
     print(command)
     result = subprocess.run(command, text=True, input=inp, capture_output=True, shell=False)
+    print("result")
+    print("stdout:", result.stdout)
+    print("stderr:", result.stderr)
+    print("code", result.returncode)
+    os.system("pause")
+    print()
     if check_code and result.returncode != 0:
         raise RuntimeError(f"Command {" ".join(command)} failed, with exit code {result.returncode} and msg:"
                            f"\n{result.stderr}")
@@ -99,7 +106,9 @@ class OsCommands:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         for script in self.powershell_scripts.values():
+            print("script close")
             script.close()
+        return False
 
     @staticmethod
     def get_local_groups() -> set[str]:

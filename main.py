@@ -63,12 +63,12 @@ def main():
             print(local_group_members)
             print("main set_up_local_groups_members")
             set_up_local_groups_members(local_group_members, users, os_commands)
-        os.system("pause")
     except Exception as err:
         with open(settings.log_file_path, "a") as f:
             print("========================", file=f)
             print(f"[{datetime.now().replace(microsecond=0)}]{type(err).__name__}: {err}.", file=f)
         print(f"{type(err).__name__}: {err}.")
+    finally:
         os.system("pause")
     return
 
