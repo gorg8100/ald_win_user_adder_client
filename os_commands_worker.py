@@ -7,16 +7,8 @@ import os
 
 def do_command(command: list[str], inp: str = None, check_code: bool = True, ret_code: bool = False) \
         -> Union[str, tuple[int, str]]:
-    print()
     print(command)
-    os.system("pause")
     result = subprocess.run(command, text=True, input=inp, capture_output=True, shell=False)
-    print("result")
-    print("stdout:", result.stdout)
-    print("stderr:", result.stderr)
-    print("code", result.returncode)
-    os.system("pause")
-    print()
     if check_code and result.returncode != 0:
         raise RuntimeError(f"Command {" ".join(command)} failed, with exit code {result.returncode} and msg:"
                            f"\n{result.stderr}")
@@ -53,16 +45,10 @@ class PowershellScript:
             raise ValueError("the script hash did not match")
 
     def do(self, **kwargs: str) -> str:
-        with open(self.tmp_file_path) as f:
-            print()
-            print("do:")
-            print(f.read())
-            print()
         self.check_hash()
         command = ["powershell",
                    "-NoProfile",
                    "-ExecutionPolicy", "Bypass",
-                   # "-WindowStyle", "Hidden",
                    "-File", self.tmp_file_path]
         for key, value in kwargs.items():
             command.append(f"-{key}")
@@ -112,20 +98,19 @@ class OsCommands:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         for script in self.powershell_scripts.values():
-            print("script close")
             script.close()
         return False
 
     @staticmethod
     def get_local_groups() -> set[str]:
-        ret = set(split_filter(do_command(["powershell", "-Command", "(Get-LocalGroup).Name"])))
-        print("get_local_groups>>>>")
-        print(ret)
-        print("^^^^^^^^^^^^")
-        return ret
+        return set(split_filter(do_command(["powershell", "-Command", "(Get-LocalGroup).Name"])))
 
     def get_group_members(self, group_name: str) -> set[str]:
-        return self.powershell_scripts["get_group_users"].as_set(groupName=group_name)
+        print(f"group members {group_name} >>>")
+        ret = self.powershell_scripts["get_group_users"].as_set(groupName=group_name)
+        print(ret)
+        print("^^^^^^^^^^")
+        return ret
 
     def add_local_group(self, group_name: str, description: str):
         self.powershell_scripts["add_local_group"].do(groupName=group_name, description=description)

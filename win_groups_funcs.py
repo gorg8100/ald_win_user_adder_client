@@ -1,4 +1,3 @@
-import os
 from typing import Literal, Any
 from os_commands_worker import OsCommands
 
@@ -55,25 +54,18 @@ def get_group_members(groups: list[dict[str, Any]], users: list[dict[str, Any]])
 def set_up_ald_groups(groups: list[dict[str, Any]], group_members: dict[str, set[str]], os_commands: OsCommands):
     current_local_groups = os_commands.get_local_groups()
     del_extraneous_ald_objects("group", groups, current_local_groups, os_commands)
-    print(groups)
-    os.system("pause")
     for group in groups:
-        print(group)
         fullname = get_fullname("group", group["name"])
-        print(fullname)
         if fullname not in current_local_groups:
             os_commands.add_local_group(fullname, "Domain group")
     for group in group_members:
         set_up_ald_group_members(group, group_members[group], os_commands)
-    os.system("pause")
     return
 
 
 def set_up_ald_group_members(group_name: str, members: set[str], os_commands: OsCommands):
     group_fullname = get_fullname("group", group_name)
-    print(">>", group_fullname)
     current_members = os_commands.get_group_members(group_fullname)
-    print(current_members)
     extra_members = current_members - members
     os_commands.del_local_group_members(group_fullname, extra_members)
     for member in members:
