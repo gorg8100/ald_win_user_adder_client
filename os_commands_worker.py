@@ -9,6 +9,7 @@ def do_command(command: list[str], inp: str = None, check_code: bool = True, ret
         -> Union[str, tuple[int, str]]:
     print()
     print(command)
+    os.system("pause")
     result = subprocess.run(command, text=True, input=inp, capture_output=True, shell=False)
     print("result")
     print("stdout:", result.stdout)
@@ -52,6 +53,11 @@ class PowershellScript:
             raise ValueError("the script hash did not match")
 
     def do(self, **kwargs: str) -> str:
+        with open(self.tmp_file_path) as f:
+            print()
+            print("do:")
+            print(f.read())
+            print()
         self.check_hash()
         command = ["powershell",
                    "-NoProfile",
