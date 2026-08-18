@@ -62,7 +62,7 @@ class PowershellScript:
         command = ["powershell",
                    "-NoProfile",
                    "-ExecutionPolicy", "Bypass",
-                   "-WindowStyle", "Hidden",
+                   # "-WindowStyle", "Hidden",
                    "-File", self.tmp_file_path]
         for key, value in kwargs.items():
             command.append(f"-{key}")
