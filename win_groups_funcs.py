@@ -57,7 +57,7 @@ def set_up_ald_groups(groups: list[dict[str, Any]], group_members: dict[str, set
     for group in groups:
         fullname = get_fullname("group", group["name"])
         if fullname not in current_local_groups:
-            os_commands.add_local_group(group["name"], "Domain group")
+            os_commands.add_local_group(fullname, "Domain group")
     for group in group_members:
         set_up_ald_group_members(group, group_members[group], os_commands)
     return
