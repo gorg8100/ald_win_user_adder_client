@@ -6,6 +6,7 @@ from manifest_getter import JsonManifest, Command
 from preprocess_condition import pre_process_condition
 from condition_handler import process_condition
 from win_groups_funcs import set_up_ald_users, set_up_ald_groups, set_up_local_groups_members, get_group_members
+from os_commands_worker import OsCommands
 
 
 def get_local_group_members(commands: list[Command], local_data: dict, users: list[dict[str, Any]],
@@ -48,20 +49,20 @@ def main():
         print(users)
         print("groups")
         print(groups)
-
-        print("main set_up_ald_users")
-        set_up_ald_users(users)
-        print("main get_group_members")
-        group_members = get_group_members(groups, users)
-        print(group_members)
-        print("main set_up_ald_groups")
-        set_up_ald_groups(groups, group_members)
-        print("main get_local_group_members")
-        local_group_members = get_local_group_members(manifest.commands, settings.local_data, users, groups,
-                                                      group_members)
-        print(local_group_members)
-        print("main set_up_local_groups_members")
-        set_up_local_groups_members(local_group_members, users)
+        with OsCommands() as os_commands:
+            print("main set_up_ald_users")
+            set_up_ald_users(users, os_commands)
+            print("main get_group_members")
+            group_members = get_group_members(groups, users)
+            print(group_members)
+            print("main set_up_ald_groups")
+            set_up_ald_groups(groups, group_members, os_commands)
+            print("main get_local_group_members")
+            local_group_members = get_local_group_members(manifest.commands, settings.local_data, users, groups,
+                                                          group_members)
+            print(local_group_members)
+            print("main set_up_local_groups_members")
+            set_up_local_groups_members(local_group_members, users, os_commands)
         os.system("pause")
     except Exception as err:
         with open(settings.log_file_path, "a") as f:
