@@ -103,7 +103,11 @@ class OsCommands:
 
     @staticmethod
     def get_local_groups() -> set[str]:
-        return set(split_filter(do_command(["powershell", "-Command", "(Get-LocalGroup).Name"])))
+        ret = set(split_filter(do_command(["powershell", "-Command", "(Get-LocalGroup).Name"])))
+        print("get_local_groups>>>>")
+        print(ret)
+        print("^^^^^^^^^^^^")
+        return ret
 
     def get_group_members(self, group_name: str) -> set[str]:
         return self.powershell_scripts["get_group_users"].as_set(groupName=group_name)
