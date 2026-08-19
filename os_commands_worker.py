@@ -5,10 +5,10 @@ import tempfile
 import os
 
 
-def do_command(command: list[str], inp: str = None, check_code: bool = True, ret_code: bool = False) \
-        -> Union[str, tuple[int, str]]:
+def do_command(command: list[str], inp: str = None, check_code: bool = True, ret_code: bool = False,
+               encoding: str | None = None) -> Union[str, tuple[int, str]]:
     print(command)
-    result = subprocess.run(command, text=True, input=inp, capture_output=True, shell=False)
+    result = subprocess.run(command, text=True, input=inp, capture_output=True, shell=False, encoding=encoding)
     if check_code and result.returncode != 0:
         raise RuntimeError(f"Command {" ".join(command)} failed, with exit code {result.returncode} and msg:"
                            f"\n{result.stderr}")
@@ -22,11 +22,27 @@ def split_filter(data: str) -> Iterable[str]:
     return filter(lambda x: bool(x), data.split("\n"))
 
 
+def get_encoding() -> str | None:
+    encoding = ""
+    text = do_command(["cmd", "/c", "chcp"])
+    for symbol in reversed(text.rstrip()):
+        if symbol.isdigit():
+            encoding += symbol
+        else:
+            break
+    encoding = encoding[::-1]
+    resolv_dict = {"1251": "cp1251", "866": "cp866", "855": "ibm855"}
+    if encoding in resolv_dict:
+        return resolv_dict[encoding]
+    return None
+
+
 class PowershellScript:
     tmp_file_path: str
     tmp_file = None
     script_hash: str
     hash_salt: bytes
+    encoding: str | None = None
 
     def __init__(self, script: str):
         enc_script = script.encode()
@@ -36,6 +52,7 @@ class PowershellScript:
         self.tmp_file.close()
         self.hash_salt = os.urandom(blake2s.SALT_SIZE)
         self.script_hash = blake2s(enc_script, salt=self.hash_salt).hexdigest()
+        self.encoding = get_encoding()
 
     def check_hash(self):
         with open(self.tmp_file_path, 'rb') as f:
@@ -53,7 +70,7 @@ class PowershellScript:
         for key, value in kwargs.items():
             command.append(f"-{key}")
             command.append(value)
-        return do_command(command)
+        return do_command(command, encoding=self.encoding)
 
     def as_iterable(self, **kwargs: str) -> Iterable[str]:
         return split_filter(self.do(**kwargs))
@@ -92,8 +109,10 @@ class OsCommands:
             'param($groupName, $member) Remove-LocalGroupMember -Group $groupName -Member $member'
         )
     }
+    encoding: str | None = None
 
     def __enter__(self) -> OsCommands:
+        self.encoding = get_encoding()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -101,9 +120,10 @@ class OsCommands:
             script.close()
         return False
 
-    @staticmethod
-    def get_local_groups() -> set[str]:
-        return set(split_filter(do_command(["powershell", "-Command", "(Get-LocalGroup).Name"])))
+    def get_local_groups(self) -> set[str]:
+        return set(
+            split_filter(do_command(["powershell", "-Command", "(Get-LocalGroup).Name"], encoding=self.encoding
+                                    )))
 
     def get_group_members(self, group_name: str) -> set[str]:
         print(f"group members {group_name} >>>")

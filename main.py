@@ -1,6 +1,7 @@
 from typing import Any
 from datetime import datetime
-import os
+import traceback
+import argparse
 from configuration_getter import Configuration
 from manifest_getter import JsonManifest, Command
 from preprocess_condition import pre_process_condition
@@ -17,7 +18,8 @@ def get_local_group_members(commands: list[Command], local_data: dict, users: li
             continue
         command.condition = pre_process_condition(command.condition, local_data)
         users_sec_id = list(map(lambda usr: usr["sec_id"],
-                                filter(lambda usr: process_condition("user", usr, command.condition, local_data), users)
+                                filter(lambda usr: process_condition("user", usr, command.condition, local_data),
+                                       users)
                                 ))
         f_groups = list(map(lambda group: group["name"],
                             filter(lambda group: process_condition("group", group, command.condition, local_data),
@@ -34,7 +36,12 @@ def get_local_group_members(commands: list[Command], local_data: dict, users: li
 
 
 def main():
-    settings = Configuration("settings.json")
+    arg_parser = argparse.ArgumentParser(
+        description="Client program for synchronizing local users and groups with a FreeIPA domain.")
+    arg_parser.add_argument("-s", "--settings_file", type=str, default="settings.json",
+                            help="path to settings file")
+    args = arg_parser.parse_args()
+    settings = Configuration(args.settings_file)
     try:
         manifest = JsonManifest(settings.sources)
         manifest.obj_filter = pre_process_condition(manifest.obj_filter, settings.local_data)
@@ -64,12 +71,16 @@ def main():
             print("main set_up_local_groups_members")
             set_up_local_groups_members(local_group_members, users, os_commands)
     except Exception as err:
-        with open(settings.log_file_path, "a") as f:
-            print("========================", file=f)
-            print(f"[{datetime.now().replace(microsecond=0)}]{type(err).__name__}: {err}.", file=f)
-        print(f"{type(err).__name__}: {err}.")
+        trace = traceback.format_exc()
+        with open(settings.log_file_path, "a", encoding="utf-8") as f:
+            err_msg = f"[{datetime.now().replace(microsecond=0)}]{type(err).__name__}: {err}."
+            print("=" * len(str(err_msg)), file=f)
+            print(err_msg, file=f)
+            print(file=f)
+            print(trace, file=f)
+        raise err
     finally:
-        os.system("pause")
+        input("Press any key to exit...")
     return
 
 
