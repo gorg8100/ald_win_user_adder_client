@@ -65,7 +65,7 @@ def set_up_ald_groups(groups: list[dict[str, Any]], group_members: dict[str, set
 
 def set_up_ald_group_members(group_name: str, members: set[str], os_commands: OsCommands):
     group_fullname = get_fullname("group", group_name)
-    current_members = os_commands.get_group_members(group_fullname)
+    current_members = os_commands.get_local_group_members(group_fullname)
     extra_members = current_members - members
     os_commands.del_local_group_members(group_fullname, extra_members)
     for member in members:
@@ -105,7 +105,7 @@ def set_up_local_groups_members(group_members: dict[str, set[str]], users: list[
 
 def set_up_local_group_members(win_group: str, relevant_members: set[str], ald_sid_prefixes: set[str],
                                os_commands: OsCommands):
-    current_members = os_commands.get_group_members(win_group)
+    current_members = os_commands.get_local_group_members(win_group)
     for member in current_members:
         if check_sid_prefix(member, ald_sid_prefixes):
             if member not in relevant_members:
@@ -117,7 +117,7 @@ def set_up_local_group_members(win_group: str, relevant_members: set[str], ald_s
 
 
 def del_ald_users_local_group(win_group: str, ald_sid_prefixes: set[str], os_commands: OsCommands):
-    all_members = os_commands.get_group_members(win_group)
+    all_members = os_commands.get_local_group_members(win_group)
     for member in all_members:
         if check_sid_prefix(member, ald_sid_prefixes):
             os_commands.del_local_group_member(win_group, member)

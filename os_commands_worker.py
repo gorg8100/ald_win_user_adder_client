@@ -92,21 +92,31 @@ class PowershellScript:
 class OsCommands:
     powershell_scripts = {
         "get_group_users": PowershellScript(
-            'param($groupName) ([ADSI]"WinNT://./$groupName,group").Members() | '
+            'param($groupName)'
+            '$ErrorActionPreference = "Stop";'
+            '([ADSI]"WinNT://./$groupName,group").Members() | '
             'ForEach-Object { $sidBytes = $_.GetType().InvokeMember("objectSid", "GetProperty", $null, $_, $null); '
             'if ($sidBytes) { [System.Security.Principal.SecurityIdentifier]::new($sidBytes, 0).Value } }'
         ),
         "add_local_group": PowershellScript(
-            'param($groupName, $description) New-LocalGroup -Name $groupName -Description $description'
+            'param($groupName, $description)'
+            '$ErrorActionPreference = "Stop";'
+            'New-LocalGroup -Name $groupName -Description $description'
         ),
         "add_local_group_member": PowershellScript(
-            'param($groupName, $member) Add-LocalGroupMember -Group $groupName -Member $member'
+            'param($groupName, $member)'
+            ' $ErrorActionPreference = "Stop";'
+            'Add-LocalGroupMember -Group $groupName -Member $member'
         ),
         "del_local_group": PowershellScript(
-            'param($groupName) Remove-LocalGroup -Name $groupName'
+            'param($groupName)'
+            '$ErrorActionPreference = "Stop";'
+            'Remove-LocalGroup -Name $groupName'
         ),
         "del_local_group_member": PowershellScript(
-            'param($groupName, $member) Remove-LocalGroupMember -Group $groupName -Member $member'
+            'param($groupName, $member)'
+            '$ErrorActionPreference = "Stop";'
+            'Remove-LocalGroupMember -Group $groupName -Member $member'
         )
     }
     encoding: str | None = None
@@ -125,7 +135,7 @@ class OsCommands:
             split_filter(do_command(["powershell", "-Command", "(Get-LocalGroup).Name"], encoding=self.encoding
                                     )))
 
-    def get_group_members(self, group_name: str) -> set[str]:
+    def get_local_group_members(self, group_name: str) -> set[str]:
         print(f"group members {group_name} >>>")
         ret = self.powershell_scripts["get_group_users"].as_set(groupName=group_name)
         print(ret)
